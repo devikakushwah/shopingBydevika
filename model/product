@@ -1,0 +1,132 @@
+const express = require('express');
+const Order = require('../model/order.model');
+const Cart = require('../model/cart.model');
+const router = express();
+router.post('/add-order/:uid/:pid',(request, response) => {
+    var today = new Date();
+    var dd = today.getDate();
+
+    var mm = today.getMonth() + 1;
+    var yyyy = today.getFullYear();
+    if (dd < 10) {
+        dd = '0' + dd;
+    }
+
+    if (mm < 10) {
+
+        mm = '0' + mm;
+    }
+    today = yyyy + '/' + mm + '/' + dd;
+    request.body.date = today;
+    var quantity = request.body.quantity;
+    Cart.findOne({userId:request.params.uid}).populate('productList').then(result=>{
+         console.log(result);
+         const ordertype = result.productList[0].product_name;
+         const productPrice = result.productList[0].price;
+         var sum = productPrice * quantity;
+         console.log("sum"+sum);
+    
+        const order = new Order({userId:request.body.userId,email:request.body.email,address:request.body.address,
+        mobile:request.body.mobile,date:today,total:sum});
+         order.itemList.push({productId:request.params.productId,quantity:request.body.quantity,price:productPrice});
+         order.save()
+             .then(result => {
+                 
+                 return response.status(200).json(result);
+             }).catch(err => {
+                 console.log(err);
+                 return response.status(500).json({ err: err.array });
+             });
+    }).catch(err =>
+        {
+          console.log(err);
+        });
+     
+})
+module.exports =router;
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const express = require('express');
+const Order = require('../model/order.model');
+const Cart = require('../model/cart.model');
+const router = express();
+router.post('/add-order/:cid',(request, response) => {
+    console.log(request.params.cid);
+    var today = new Date();
+    var dd = today.getDate();
+
+    var mm = today.getMonth() + 1;
+    var yyyy = today.getFullYear();
+    if (dd < 10) {
+        dd = '0' + dd;
+    }
+
+    if (mm < 10) {
+
+        mm = '0' + mm;
+    }
+    today = yyyy + '/' + mm + '/' + dd;
+    request.body.date = today;
+    var quantity = request.body.quantity;
+    Cart.findOne({_id: request.params.cid}).populate("productList").then(result => {
+        console.log(result);
+        var uId =  result.userId;
+        console.log(uId);
+        for(i=0;i<result.productList.length;i++){
+
+        }
+        const pId = result.productList[0]._id;
+        const productName = result.productList[0].product_name;
+             const productPrice = result.productList[0].price;
+             var sum = productPrice * quantity;
+             console.log("sum"+sum);
+          
+            const order = new Order({userId:uId,email:request.body.email,address:request.body.address,
+            mobile:request.body.mobile,date:today,total:sum});
+             order.itemList.push({productId:pId,quantity:request.body.quantity,price:productPrice});
+             order.save()
+                 .then(result => {
+                     
+                     return response.status(200).json(result);
+                 }).catch(err => {
+                     console.log(err);
+                     return response.status(500).json({ err: err.array });
+                 });
+    }).catch(err=>{
+        console.log(err);
+        return response.status(500).json({err:err.array});
+    });
+    // Cart.findOne({userId:request.params.uid}).populate('productList').then(result=>{
+    //      console.log(result);
+    //      const ordertype = result.productList[0].product_name;
+    //      const productPrice = result.productList[0].price;
+    //      var sum = productPrice * quantity;
+    //      console.log("sum"+sum);
+    
+    //     const order = new Order({userId:request.body.userId,email:request.body.email,address:request.body.address,
+    //     mobile:request.body.mobile,date:today,total:sum});
+    //      order.itemList.push({productId:request.params.productId,quantity:request.body.quantity,price:productPrice});
+    //      order.save()
+    //          .then(result => {
+                 
+    //              return response.status(200).json(result);
+    //          }).catch(err => {
+    //              console.log(err);
+    //              return response.status(500).json({ err: err.array });
+    //          });
+    // }).catch(err =>
+    //     {
+    //       console.log(err);
+    //     });
+     
+})
+module.exports =router;
+
+
+//update response
+cart.updateOne({userId:request.params.userId},{
+    
+})
